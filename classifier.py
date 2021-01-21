@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.utils.data.dataloader import DataLoader
 
 class AirplaneBirdClassifier:
     def __init__(self):
@@ -13,15 +14,16 @@ class AirplaneBirdClassifier:
 
     def training_loop(self,
                       n_epochs: int,
-                      dataset_train,
+                      train_dataloader: DataLoader,
                       optimizer_class: torch.optim.Optimizer.__class__,
                       learning_rate: float):
         optimizer = optimizer_class(self.model.parameters(), lr=learning_rate)
 
         for epoch in range(n_epochs):
-            for image, label in dataset_train:
-                out = self.model(image.view(-1).unsqueeze(0))
-                loss = self.loss_fn(out, torch.tensor([label]))
+            for imgs, labels in train_dataloader:
+                batch_size = imgs.shape[0]
+                outputs = self.model(imgs.view(batch_size, -1))
+                loss = self.loss_fn(outputs, labels)
 
                 optimizer.zero_grad()
                 loss.backward()
